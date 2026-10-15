@@ -1,0 +1,61 @@
+name: Daily Standup Issue
+
+on:
+  schedule:
+    - cron: '10 10 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  create-daily-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Close previous daily issue
+        run: |
+          previous_issue=$(gh issue list \
+            --label "daily" \
+            --state open \
+            --limit 1 \
+            --json number \
+            --jq '.[0].number')
+          
+          if [ -n "$previous_issue" ]; then
+            gh issue close "$previous_issue" --comment "Закрыто автоматически, открыт новый daily."
+            echo "Закрыт Issue #$previous_issue"
+          else
+            echo "Предыдущих открытых daily-issue нет."
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create new daily issue
+        run: |
+          TODAY=$(TZ=Europe/Moscow date +'%Y-%m-%d')
+          
+          BODY="## Daily Check-in — сегодня
+
+          ### Что сделано вчера
+          <!-- Укажи номера задач и короткий комментарий, например #12, #15 -->
+          - 
+
+          ### Что планируешь сегодня
+          <!-- Укажи номера задач и короткий комментарий, например #18 -->
+          - 
+
+          ### Что блокирует
+          <!-- Если ничего — напиши \"Ничего\" -->
+          - "
+          
+          gh issue create \
+            --title "Daily — $TODAY" \
+            --label "daily" \
+            --assignee "user1,user2,user3" \
+            --body "$BODY"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
