@@ -55,7 +55,7 @@ jobs:
           gh issue create \
             --title "Daily — $TODAY" \
             --label "daily" \
-            --assignee "mabalamba,erxsxn-hash,Zhargon-1337" \
+            --assignee "mabalamba,erxsxn-hash,Zhargon-1337, mandmanduhai-cloud" \
             --body "$BODY"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
